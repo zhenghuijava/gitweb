@@ -16,11 +16,60 @@
   --star: #eab308;
   --danger: #dc2626;
   --ok: #16a34a;
+  --glass: var(--glass);
+  --glass-thin: var(--glass-thin);
+  --input-bg: #ffffff;
+  --pill-bg: #ffffff;
+  --hover-bg: #eef0f7;
+  --skeleton-a: #eceef4;
+  --skeleton-b: #f5f6fa;
+  --grid-line: rgba(79, 70, 229, 0.035);
+  --orb-cyan: rgba(8, 145, 178, 0.2);
+  --orb-violet: rgba(79, 70, 229, 0.16);
+  --topic-bg: var(--topic-bg);
+  --banner-bg: var(--banner-bg);
+  --banner-border: var(--banner-border);
   --shadow-sm: 0 1px 2px rgba(26, 34, 51, 0.05), 0 1px 3px rgba(26, 34, 51, 0.06);
   --shadow-md: 0 4px 12px rgba(26, 34, 51, 0.08), 0 2px 4px rgba(26, 34, 51, 0.05);
   --shadow-lg: 0 12px 32px rgba(79, 70, 229, 0.14), 0 4px 8px rgba(26, 34, 51, 0.06);
   --mono: ui-monospace, 'Cascadia Code', 'SF Mono', Consolas, monospace;
   --sans: 'Segoe UI', -apple-system, 'PingFang SC', 'Microsoft YaHei', sans-serif;
+  color-scheme: light;
+}
+
+/* ---------- 暗色主题 ---------- */
+html[data-theme='dark'] {
+  --bg: #0d1020;
+  --card: #151a2e;
+  --border: #232a45;
+  --border-strong: #323b5e;
+  --fg: #e6eaf5;
+  --fg-muted: #9aa6c4;
+  --fg-faint: #5f6b8f;
+  --indigo: #818cf8;
+  --cyan: #22d3ee;
+  --grad: linear-gradient(120deg, #6366f1, #06b6d4);
+  --gold: #eab308;
+  --star: #eab308;
+  --danger: #f87171;
+  --ok: #4ade80;
+  --glass: rgba(17, 21, 40, 0.85);
+  --glass-thin: rgba(17, 21, 40, 0.72);
+  --input-bg: #10142a;
+  --pill-bg: #151a2e;
+  --hover-bg: #1c2340;
+  --skeleton-a: #1a2038;
+  --skeleton-b: #232b4a;
+  --grid-line: rgba(129, 140, 248, 0.05);
+  --orb-cyan: rgba(34, 211, 238, 0.12);
+  --orb-violet: rgba(99, 102, 241, 0.14);
+  --topic-bg: rgba(129, 140, 248, 0.14);
+  --banner-bg: rgba(34, 211, 238, 0.09);
+  --banner-border: rgba(34, 211, 238, 0.3);
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3), 0 1px 3px rgba(0, 0, 0, 0.35);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.4), 0 2px 4px rgba(0, 0, 0, 0.3);
+  --shadow-lg: 0 12px 32px rgba(99, 102, 241, 0.25), 0 4px 8px rgba(0, 0, 0, 0.35);
+  color-scheme: dark;
 }
 
 * { box-sizing: border-box; }
@@ -29,7 +78,7 @@ html { color-scheme: light; }
 
 body {
   margin: 0;
-  background: var(--bg);
+  background: var(--input-bg);
   color: var(--fg);
   font-family: var(--sans);
   font-size: 14px;
@@ -56,8 +105,8 @@ body {
   pointer-events: none;
   z-index: 0;
   background:
-    linear-gradient(rgba(79, 70, 229, 0.035) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(79, 70, 229, 0.035) 1px, transparent 1px);
+    linear-gradient(var(--grid-line) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
   background-size: 40px 40px;
   will-change: transform;
 }
@@ -72,13 +121,13 @@ body {
 .orb-cyan {
   width: 480px; height: 480px;
   right: -120px; top: 40px;
-  background: radial-gradient(circle, rgba(8, 145, 178, 0.2), transparent 70%);
+  background: radial-gradient(circle, var(--orb-cyan), transparent 70%);
 }
 
 .orb-violet {
   width: 560px; height: 560px;
   left: 15%; top: 55%;
-  background: radial-gradient(circle, rgba(79, 70, 229, 0.16), transparent 70%);
+  background: radial-gradient(circle, var(--orb-violet), transparent 70%);
 }
 
 .sidebar, .main { position: relative; z-index: 1; }
@@ -89,7 +138,7 @@ body {
   border-right: 1px solid var(--border);
   display: flex;
   flex-direction: column;
-  background: rgba(255, 255, 255, 0.85);
+  background: var(--glass);
   backdrop-filter: blur(12px);
 }
 
@@ -153,7 +202,7 @@ body {
   position: relative;
 }
 
-.cat:hover { background: #eef0f7; color: var(--fg); }
+.cat:hover { background: var(--hover-bg); color: var(--fg); }
 
 .cat-active {
   background: var(--grad);
@@ -179,7 +228,7 @@ body {
   gap: 10px;
   padding: 10px 20px;
   border-bottom: 1px solid var(--border);
-  background: rgba(255, 255, 255, 0.75);
+  background: var(--glass-thin);
   backdrop-filter: blur(12px);
 }
 
@@ -189,7 +238,7 @@ body {
   flex: 1;
   max-width: 420px;
   padding: 8px 12px;
-  background: #fff;
+  background: var(--pill-bg);
   border: 1px solid var(--border-strong);
   border-radius: 8px;
   color: var(--fg);
@@ -206,7 +255,7 @@ body {
 
 .toolbar select {
   padding: 8px 8px;
-  background: #fff;
+  background: var(--pill-bg);
   border: 1px solid var(--border-strong);
   border-radius: 8px;
   color: var(--fg-muted);
@@ -215,6 +264,23 @@ body {
   box-shadow: var(--shadow-sm);
 }
 .toolbar select:hover { color: var(--fg); border-color: var(--fg-faint); }
+
+.theme-toggle {
+  width: 34px;
+  height: 34px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--pill-bg);
+  border: 1px solid var(--border-strong);
+  border-radius: 8px;
+  font-size: 15px;
+  cursor: pointer;
+  box-shadow: var(--shadow-sm);
+  transition: transform 140ms ease-out, box-shadow 140ms ease-out;
+}
+.theme-toggle:hover { transform: translateY(-1px); box-shadow: var(--shadow-md); }
+.theme-toggle:active { transform: none; }
 
 .rate {
   margin-left: auto;
@@ -257,7 +323,7 @@ body {
 
 .sub {
   padding: 5px 14px;
-  background: #fff;
+  background: var(--pill-bg);
   border: 1px solid var(--border-strong);
   border-radius: 999px;
   color: var(--fg-muted);
@@ -317,7 +383,7 @@ body {
 
 .card-top { display: flex; align-items: center; gap: 9px; }
 
-.card-avatar { border-radius: 7px; flex-shrink: 0; background: var(--bg); }
+.card-avatar { border-radius: 7px; flex-shrink: 0; background: var(--input-bg); }
 
 .card-name {
   font-family: var(--mono);
@@ -361,7 +427,7 @@ body {
 .topic {
   font-size: 11px;
   padding: 1px 9px;
-  background: rgba(79, 70, 229, 0.07);
+  background: var(--topic-bg);
   color: var(--indigo);
   border-radius: 999px;
   white-space: nowrap;
@@ -470,8 +536,8 @@ body {
 .banner {
   padding: 10px 14px;
   margin-bottom: 16px;
-  border: 1px solid rgba(8, 145, 178, 0.35);
-  background: rgba(8, 145, 178, 0.08);
+  border: 1px solid var(--banner-border);
+  background: var(--banner-bg);
   color: var(--cyan);
   border-radius: 8px;
   font-size: 13px;
@@ -481,7 +547,7 @@ body {
 
 .skeleton-row {
   height: 150px;
-  background: linear-gradient(90deg, #eceef4 25%, #f5f6fa 50%, #eceef4 75%);
+  background: linear-gradient(90deg, var(--skeleton-a) 25%, var(--skeleton-b) 50%, var(--skeleton-a) 75%);
   background-size: 200% 100%;
   border-radius: 12px;
   animation: shimmer 1.4s infinite;

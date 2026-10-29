@@ -77,6 +77,21 @@ export default function App() {
   const [lang, setLang] = useState('')
   const [sort, setSort] = useState('stars')
   const [view, setView] = useState(() => (window.location.hash === '#discuss' ? 'discuss' : 'repos')) // repos | discuss
+  const [theme, setTheme] = useState(() => {
+    const saved = localStorage.getItem('gitweb:theme')
+    if (saved === 'dark' || saved === 'light') return saved
+    return window.matchMedia?.('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
+  })
+
+  // 主题切换：写 html[data-theme] 供 CSS 变量生效，并持久化
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', theme)
+    localStorage.setItem('gitweb:theme', theme)
+  }, [theme])
+
+  function toggleTheme() {
+    setTheme((t) => (t === 'dark' ? 'light' : 'dark'))
+  }
 
   // hash 路由：#discuss ↔ view，支持分享与前进后退
   useEffect(() => {
@@ -224,6 +239,14 @@ export default function App() {
           ) : (
             <div className="toolbar-hint">聚合当前热门讨论，数据每 8 分钟更新</div>
           )}
+          <button
+            className="theme-toggle"
+            onClick={toggleTheme}
+            title={theme === 'dark' ? '切换到亮色' : '切换到暗色'}
+            aria-label={theme === 'dark' ? '切换到亮色主题' : '切换到暗色主题'}
+          >
+            {theme === 'dark' ? '☀️' : '🌙'}
+          </button>
           <RateLimitBadge />
         </header>
 
