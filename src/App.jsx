@@ -36,20 +36,27 @@ function RateLimitBadge() {
   )
 }
 
-function RepoRow({ repo, rank }) {
+function RepoCard({ repo, rank, index }) {
   return (
-    <a className="row" href={repo.url} target="_blank" rel="noreferrer">
-      <span className="row-rank">{rank}</span>
-      <div className="row-main">
-        <div className="row-head">
-          <span className="row-name">{repo.fullName}</span>
-          {repo.topics.slice(0, 3).map((t) => (
-            <span className="topic" key={t}>{t}</span>
-          ))}
-        </div>
-        <p className="row-desc">{repo.description || '（无描述）'}</p>
+    <a
+      className="card"
+      href={repo.url}
+      target="_blank"
+      rel="noreferrer"
+      style={{ '--stagger-delay': `${Math.min(index, 11) * 45}ms` }}
+    >
+      <div className="card-top">
+        <img className="card-avatar" src={repo.avatar} alt="" loading="lazy" width="28" height="28" />
+        <span className="card-name">{repo.fullName}</span>
+        {rank <= 3 && <span className="card-rank medal">#{rank}</span>}
       </div>
-      <div className="row-meta">
+      <p className="card-desc">{repo.description || '（无描述）'}</p>
+      {repo.topics.length > 0 && (
+        <div className="card-topics">
+          {repo.topics.slice(0, 3).map((t) => <span className="topic" key={t}>{t}</span>)}
+        </div>
+      )}
+      <div className="card-meta">
         <span className="stars"><StarIcon />{formatStars(repo.stars)}</span>
         <LanguageDot lang={repo.language} />
         <span className="updated">{formatTime(repo.updatedAt)}</span>
@@ -127,8 +134,30 @@ export default function App() {
     setSubId(c.subs[0].id)
   }
 
+  // 视差：主区滚动时背景层以 0.35x 速度跟随
+  const contentRef = useRef(null)
+  const parallaxRef = useRef(null)
+  useEffect(() => {
+    const content = contentRef.current
+    const bg = parallaxRef.current
+    if (!content || !bg) return
+    let raf = 0
+    const onScroll = () => {
+      cancelAnimationFrame(raf)
+      raf = requestAnimationFrame(() => {
+        bg.style.transform = `translateY(${content.scrollTop * 0.35}px)`
+      })
+    }
+    content.addEventListener('scroll', onScroll, { passive: true })
+    return () => { content.removeEventListener('scroll', onScroll); cancelAnimationFrame(raf) }
+  }, [view])
+
   return (
     <div className="shell">
+      <div className="parallax-bg" ref={parallaxRef} aria-hidden="true">
+        <div className="parallax-orb orb-cyan" />
+        <div className="parallax-orb orb-violet" />
+      </div>
       <aside className="sidebar">
         <div className="brand">
           <span className="brand-mark">GW</span>
@@ -199,9 +228,9 @@ export default function App() {
         </header>
 
         {view === 'discuss' ? (
-          <Discuss />
+          <Discuss ref={contentRef} />
         ) : (
-        <div className="content">
+        <div className="content" ref={contentRef}>
           <div className="cat-head">
             <h1>{searchMode ? `搜索“${query.trim()}”` : category.name}</h1>
             {!searchMode && (
@@ -251,11 +280,11 @@ export default function App() {
               <p className="empty-hint">试试更换小类、语言或放宽搜索关键词。</p>
             </div>
           ) : (
-            <ol className="list">
+            <div className="card-grid">
               {items.map((r, i) => (
-                <li key={r.id}><RepoRow repo={r} rank={i + 1} /></li>
+                <RepoCard repo={r} rank={i + 1} index={i} key={r.id} />
               ))}
-            </ol>
+            </div>
           )}
         </div>
         )}

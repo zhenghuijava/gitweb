@@ -4,13 +4,21 @@
 export const SOURCES = [
   { id: 'hn', name: 'Hacker News', short: 'HN', color: '#ff6600', region: '国外' },
   { id: 'devto', name: 'DEV.to', short: 'DEV', color: '#3b49df', region: '国外' },
-  { id: 'lobsters', name: 'Lobsters', short: 'LOB', color: '#ac130d', region: '国外' },
   { id: 'stackexchange', name: 'Stack Overflow', short: 'SO', color: '#f48024', region: '国外' },
-  { id: 'reddit-prog', name: 'r/programming', short: 'R/P', color: '#ff4500', region: '国外' },
-  { id: 'reddit-tech', name: 'r/technology', short: 'R/T', color: '#ff4500', region: '国外' },
-  { id: 'bilibili', name: 'B站热门', short: 'BIL', color: '#fb7299', region: '国内' },
-  { id: 'v2ex', name: 'V2EX', short: 'V2', color: '#778087', region: '国内' },
+  { id: 'weibo', name: '微博热搜', short: '微博', color: '#e6162d', region: '国内' },
+  { id: 'bilibili', name: 'B站热门', short: 'B站', color: '#fb7299', region: '国内' },
+  { id: '36kr', name: '36氪', short: '36氪', color: '#0f80ff', region: '国内' },
+  { id: 'sspai', name: '少数派', short: '少数派', color: '#d71a21', region: '国内' },
 ]
+
+// codelife（tophub 镜像）聚合接口，开放 CORS，已验证可用
+const CODELIFE = 'https://api.codelife.cc/api/top/list?lang=cn&id='
+const CODELIFE_IDS = {
+  weibo: 'KqndgxeLl9',
+  bilibili: '74KvxwokxM',
+  '36kr': 'Q1Vd5Ko85R',
+  sspai: 'Y2KeDGQdNP',
+}
 
 const CACHE_PREFIX = 'gitweb:talk:'
 const CACHE_TTL = 8 * 60 * 1000
@@ -122,22 +130,29 @@ async function fetchReddit(sub, signal) {
     }))
 }
 
-// --- B站综合热门（国内直连，CORS 开放）---
-async function fetchBilibili(signal) {
-  const d = await fetchJSON('https://api.bilibili.com/x/web-interface/popular?ps=20', signal, {
-    headers: { 'User-Agent': 'Mozilla/5.0' },
-  })
-  if (d.code !== 0) throw new Error(`BILIBILI_${d.code}`)
-  return (d.data?.list || []).slice(0, 15).map((v) => ({
-    id: `bl-${v.aid}`,
-    title: v.title,
-    url: `https://www.bilibili.com/video/av${v.aid}`,
-    discuss: `https://www.bilibili.com/video/av${v.aid}`,
-    points: v.stat?.view ?? 0,
-    comments: (v.stat?.danmaku ?? 0),
-    time: v.pubdate ? v.pubdate * 1000 : Date.now(),
-    source: 'bilibili',
+// --- codelife 聚合源（微博/B站/36氪/少数派，开放 CORS）---
+async function fetchCodelife(sourceId, signal) {
+  const d = await fetchJSON(CODELIFE + CODELIFE_IDS[sourceId], signal)
+  if (d.code !== 200 || !Array.isArray(d.data)) throw new Error(`CODELIFE_${d.code}`)
+  return d.data.slice(0, 15).map((it, i) => ({
+    id: `${sourceId}-${i}-${it.link || it.title}`,
+    title: it.title || '',
+    url: it.link || '#',
+    discuss: it.link || '#',
+    points: parseHotValue(it.hotValue),
+    comments: 0,
+    time: Date.now(), // 聚合源无时间戳，显示为"刚刚"不合适，用 0 标记
+    noTime: true,
+    source: sourceId,
   }))
+}
+
+function parseHotValue(v) {
+  if (typeof v !== 'string') return 0
+  const m = v.match(/^([\d.]+)\s*(万|w)?/i)
+  if (!m) return 0
+  const n = parseFloat(m[1])
+  return m[2] ? Math.round(n * 10000) : Math.round(n)
 }
 
 // --- V2EX 官方 API（CORS 不开放，浏览器直连大概率失败，保留并允许失败）---
@@ -158,12 +173,11 @@ async function fetchV2EX(signal) {
 const FETCHERS = {
   'hn': (s) => fetchHN(s),
   'devto': (s) => fetchDevTo(s),
-  'lobsters': (s) => fetchLobsters(s),
   'stackexchange': (s) => fetchStackExchange(s),
-  'reddit-prog': (s) => fetchReddit('programming', s),
-  'reddit-tech': (s) => fetchReddit('technology', s),
-  'bilibili': (s) => fetchBilibili(s),
-  'v2ex': (s) => fetchV2EX(s),
+  'weibo': (s) => fetchCodelife('weibo', s),
+  'bilibili': (s) => fetchCodelife('bilibili', s),
+  '36kr': (s) => fetchCodelife('36kr', s),
+  'sspai': (s) => fetchCodelife('sspai', s),
 }
 
 export async function fetchSource(sourceId, signal) {

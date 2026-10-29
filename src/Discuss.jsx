@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { forwardRef, useEffect, useState } from 'react'
 import { SOURCES, fetchSource, timeAgo, formatCount } from './discuss.js'
 
 function ItemRow({ item }) {
@@ -10,8 +10,8 @@ function ItemRow({ item }) {
       <a className="talk-title" href={item.url} target="_blank" rel="noreferrer">{item.title}</a>
       <div className="talk-meta">
         <span className="talk-stat">{isVideo ? '▶' : '▲'} {formatCount(item.points)}</span>
-        <span className="talk-stat">💬 {formatCount(item.comments)}</span>
-        <span className="talk-time">{timeAgo(item.time)}</span>
+        {item.comments > 0 && <span className="talk-stat">💬 {formatCount(item.comments)}</span>}
+        {!item.noTime && <span className="talk-time">{timeAgo(item.time)}</span>}
       </div>
     </div>
   )
@@ -31,7 +31,7 @@ function SourceChip({ src, active, onClick, state }) {
   )
 }
 
-export default function Discuss() {
+const Discuss = forwardRef(function Discuss(props, ref) {
   const [active, setActive] = useState('all')
   const [data, setData] = useState({}) // sourceId -> {items} | {error} | {loading}
   const [tick, setTick] = useState(0)
@@ -60,7 +60,7 @@ export default function Discuss() {
   const failCount = SOURCES.filter((s) => data[s.id]?.error).length
 
   return (
-    <div className="content">
+    <div className="content" ref={ref}>
       <div className="cat-head">
         <h1>热议 · 社区热帖</h1>
         <p className="talk-sub">
@@ -120,4 +120,6 @@ export default function Discuss() {
       </div>
     </div>
   )
-}
+})
+
+export default Discuss
