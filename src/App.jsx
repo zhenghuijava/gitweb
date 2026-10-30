@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { CATEGORIES, LANGUAGES, LANGUAGE_COLORS } from './categories.js'
 import { searchRepos, formatStars, formatTime, subscribeRateLimit } from './github.js'
 import Discuss from './Discuss.jsx'
+import catSvg from './cat.svg'
 
 function StarIcon() {
   return (
@@ -11,28 +12,16 @@ function StarIcon() {
   )
 }
 
-/* 几何猫 logo：剪影式——头与耳一体成型，圆弧下颌，刻空斜眼与胡须。
-   单色 currentColor，刻空处透出 var(--bg)，随主题自动反转 */
+/* 品牌 logo：美短猫头（用户提供的美短.svg），img 引用保证原图保真 */
 function CatLogo({ size = 26 }) {
   return (
-    <svg
+    <img
+      src={catSvg}
+      alt=""
       width={size}
       height={size}
-      viewBox="0 0 32 32"
-      fill="none"
-      aria-hidden="true"
       style={{ display: 'block' }}
-    >
-      {/* 头部剪影：左耳 → 耳凹 → 右耳 → 右颊圆弧 → 下颌圆弧 → 左颊圆弧闭合 */}
-      <path
-        fill="currentColor"
-        fillRule="evenodd"
-        d="M7.2 4.6c.3-1 1.5-1.3 2.2-.6L13.8 8.4h4.4l4.4-4.4c.7-.7 1.9-.4 2.2.6l1.5 5.2A9.96 9.96 0 0 1 28 16c0 6.6-5.4 12-12 12S4 22.6 4 16c0-2.3.8-4.5 2.1-6.2L7.2 4.6Z
-           M11.5 15.2c0-.7.5-1.2 1.2-1.2s1.2.5 1.2 1.2v1.6c0 .7-.5 1.2-1.2 1.2s-1.2-.5-1.2-1.2v-1.6Zm8.6 0c0-.7.5-1.2 1.2-1.2s1.2.5 1.2 1.2v1.6c0 .7-.5 1.2-1.2 1.2s-1.2-.5-1.2-1.2v-1.6Z
-           M9.8 21.6c.4-.3 1-.2 1.3.2.6.8 1.7 1.4 2.9 1.6.5.1.9.6.8 1.1-.1.5-.6.9-1.1.8-1.6-.3-3-.9-4-2.4-.3-.4-.2-1 .1-1.3Zm12.4 0c.3.3.4.9.1 1.3-1 1.5-2.4 2.1-4 2.4-.5.1-1-.3-1.1-.8-.1-.5.3-1 .8-1.1 1.2-.2 2.3-.8 2.9-1.6.3-.4.9-.5 1.3-.2Z"
-        clipRule="evenodd"
-      />
-    </svg>
+    />
   )
 }
 
