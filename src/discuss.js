@@ -70,6 +70,7 @@ async function fetchDevTo(signal) {
     id: `dv-${a.id}`,
     title: a.title,
     url: a.url,
+    image: a.cover_image || a.social_image || (a.user && a.user.profile_image) || null,
     discuss: a.url + '#comments',
     points: a.positive_reactions_count ?? 0,
     comments: a.comments_count ?? 0,

@@ -6,12 +6,33 @@ function ItemRow({ item, index }) {
   const isVideo = item.source === 'bilibili'
   return (
     <div className="talk-row" style={{ '--stagger-delay': `${Math.min(index, 11) * 40}ms` }}>
-      <span className="talk-badge" style={{ '--src-color': src?.color }}>{src?.short}</span>
-      <a className="talk-title" href={item.url} target="_blank" rel="noreferrer">{item.title}</a>
-      <div className="talk-meta">
-        <span className="talk-stat">{isVideo ? '▶' : '▲'} {formatCount(item.points)}</span>
-        {item.comments > 0 && <span className="talk-stat">💬 {formatCount(item.comments)}</span>}
-        {!item.noTime && <span className="talk-time">{timeAgo(item.time)}</span>}
+      <a className="talk-media" href={item.url} target="_blank" rel="noreferrer" tabIndex={-1} aria-hidden="true">
+        {item.image ? (
+          <img
+            className="talk-img"
+            src={item.image}
+            alt=""
+            loading="lazy"
+            onError={(e) => {
+              const span = document.createElement('span')
+              span.className = 'talk-fallback'
+              span.style.setProperty('--src-color', src?.color)
+              span.textContent = src?.short || '·'
+              e.currentTarget.replaceWith(span)
+            }}
+          />
+        ) : (
+          <span className="talk-fallback" style={{ '--src-color': src?.color }}>{src?.short}</span>
+        )}
+      </a>
+      <div className="talk-body">
+        <span className="talk-badge" style={{ '--src-color': src?.color }}>{src?.short}</span>
+        <a className="talk-title" href={item.url} target="_blank" rel="noreferrer">{item.title}</a>
+        <div className="talk-meta">
+          <span className="talk-stat">{isVideo ? '▶' : '▲'} {formatCount(item.points)}</span>
+          {item.comments > 0 && <span className="talk-stat">💬 {formatCount(item.comments)}</span>}
+          {!item.noTime && <span className="talk-time">{timeAgo(item.time)}</span>}
+        </div>
       </div>
     </div>
   )
