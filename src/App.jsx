@@ -37,28 +37,30 @@ function RateLimitBadge() {
 }
 
 function Plaque({ repo, rank, index }) {
-  const top = rank <= 3
   return (
     <a
-      className={`plaque ${top ? 'plaque-top' : ''}`}
+      className="card"
       href={repo.url}
       target="_blank"
       rel="noreferrer"
-      style={{ '--stagger-delay': `${Math.min(index, 7) * 40}ms` }}
+      style={{ '--stagger-delay': `${Math.min(index, 11) * 45}ms` }}
     >
-      <span className="plaque-no">No.{String(rank).padStart(3, '0')}</span>
-      <span className="plaque-name">{repo.fullName}</span>
-      <span className="plaque-meta">
+      <div className="card-top">
+        <img className="card-avatar" src={repo.avatar} alt="" loading="lazy" width="28" height="28" />
+        <span className="card-name">{repo.fullName}</span>
+        {rank <= 3 && <span className="card-rank">#{rank}</span>}
+      </div>
+      <p className="card-desc">{repo.description || '（无描述）'}</p>
+      {repo.topics.length > 0 && (
+        <div className="card-topics">
+          {repo.topics.slice(0, 3).map((t) => <span className="topic" key={t}>{t}</span>)}
+        </div>
+      )}
+      <div className="card-meta">
         <span className="stars"><StarIcon />{formatStars(repo.stars)}</span>
         <LanguageDot lang={repo.language} />
         <span className="updated">{formatTime(repo.updatedAt)}</span>
-      </span>
-      <p className="plaque-desc">{repo.description || '（无描述）'}</p>
-      {repo.topics.length > 0 && (
-        <span className="plaque-topics">
-          {repo.topics.slice(0, 3).map((t) => <span className="topic" key={t}>{t}</span>)}
-        </span>
-      )}
+      </div>
     </a>
   )
 }
@@ -286,7 +288,7 @@ export default function App() {
               <p className="empty-hint">试试更换小类、语言或放宽搜索关键词。</p>
             </div>
           ) : (
-            <div className="plaques">
+            <div className="card-grid">
               {items.map((r, i) => (
                 <Plaque repo={r} rank={i + 1} index={i} key={r.id} />
               ))}

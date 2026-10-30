@@ -1,37 +1,41 @@
-# DESIGN.md — GitWeb 视觉系统（v5 美术馆展馆）
+# DESIGN.md — GitWeb 视觉系统（v6 Apple 风）
 
 ## 世界
-**美术馆展馆**：GitHub 项目是展品，界面是展墙。克制、尺度感、编号铭牌——拒绝卡片流的圆角阴影语言。
+**Apple 产品页语言**：浅灰底白卡片、大圆角、系统 sans 大标题、克制的蓝色强调。干净、熟悉、大气来自字号与留白，而非装饰。
 
 ## 令牌（src/styles.css）
 
 | 角色 | Light | Dark |
 |---|---|---|
-| 墙面 `--wall` | `#ece9e3` 暖石灰 | `#161512` 深画廊 |
-| 墙裙 `--wall-deep` | `#e3dfd6` | `#1d1c18` |
-| 铭牌 `--plaque` | `#f7f5f0` | `#201e19` |
-| 线 `--line` / 强线 | `#c9c4b8` / `#8f887a` | `#37342c` / `#55503f` |
-| 墨色 `--fg` | `#26241f` | `#e8e4d8`（展灯暖白）|
-| 强调 `--accent` | `#9a3b26` 展签朱砂 | `#d0684f` |
-| 金 `--gold`（star 数）| `#8a6d1f` | `#c9a54a` |
+| 页面底 `--bg` | `#f5f5f7` | `#000000` |
+| 卡片 `--card` | `#ffffff` | `#1d1d1f` |
+| 主文字 `--fg` | `#1d1d1f` | `#f5f5f7` |
+| 次级/弱化 | `#6e6e73` / `#86868b` | `#a1a1a6` / `#6e6e73` |
+| 线 `--line` | `#d2d2d7` | `#2d2d30` |
+| 强调 `--accent` | `#0071e3` Apple 蓝 | `#2997ff` |
+| star 金 `--gold` | `#b25000`（AA on white）| `#ff9f0a` |
 
-字体：标题/编号/star 数用衬线栈 `Georgia, 'Times New Roman', 'Songti SC', 'SimSun'`；正文用系统 sans 中文栈。主题由 `<html data-theme>` 驱动，index.html 内联脚本在首帧前设置（防闪屏）。
+字体：`-apple-system, SF Pro Text, Segoe UI, PingFang SC` 系统栈。标题 -0.022em 紧字距（48px h1）。圆角体系：卡片 18px、控件 12px、药丸 999px。
 
-## 结构语言
-- **零圆角、零 box-shadow 卡片**：分隔靠 1px 细线与留白；唯一软阴影 `--shadow-soft` 目前未被使用（保留给未来模态）。
-- **铭牌条目 `.plaque`**：74px 编号列 + 名称 + 右侧小型大写字母元数据；简介与 topic 在第二行。hover = 左侧朱砂竖线（聚光）+ 编号变红 + 名称下划线。
-- **No.xxx 编号**：serif tabular-nums；前三甲 `.plaque-top` 编号朱砂色 + 2px 下划线。
-- **展厅导览（侧栏）**：分类带两位数编号，选中态左缘 2px 朱砂竖线。
-- **小类 tab `.sub`**：文字 + 右侧竖线分隔，选中变朱砂，无药丸背景。
-- **搜索 `.search`**：无框底线输入（底线在 focus 时变朱砂）。
-- 展灯光斑 `.wall-glow`：两团静态径向渐变（朱砂 + 金，各 5% 透明度），无动画。
+## 布局契约（性能关键）
+- **页面自然滚动（body 滚动）**——禁止内容区 `overflow-y` 内嵌滚动容器
+- 侧栏 `position: sticky; top: 0; height: 100vh`
+- 工具栏吸顶 + 毛玻璃：`backdrop-filter: saturate(180%) blur(20px)`，**全站唯一**的 backdrop-filter（一层固定元素，性能安全）
+- 内容区 `max-width: 1200px`，卡片网格 `auto-fill minmax(320px, 1fr)` gap 20px
+
+## 组件语言
+- **卡片**：白底 18px 圆角，静态微阴影；hover `scale(1.015)` + 阴影抬升，220ms Apple 缓动；排名 #1–3 蓝色药丸徽章
+- **小类 tab**：药丸，选中 = 黑底白字（light）/ 白字黑底反转（dark）
+- **侧栏**：选中项蓝底白字圆角 10px；分类编号 tabular-nums
+- **search**：12px 圆角，focus 蓝边 + 4px 蓝色光环
+- **retry**：Apple 蓝药丸按钮
 
 ## 动效
-- `plaque-in` 入场 stagger（8px 上移 + 40ms 间隔，上限 7 个）。
-- 全部 hover 为颜色/透明度过渡 130–150ms。
-- `prefers-reduced-motion` 下入场动画与平滑滚动关闭。
-- **性能契约**：内容区禁止 `backdrop-filter` 与滚动驱动的 JS 视差（v4 的滚动卡顿根源）；动效只允许 transform/opacity/color。
+- `card-in` 入场 stagger（16px 上移 + scale 0.98，45ms 间隔，上限 12）
+- hover 全部 transform/opacity/color 过渡 140–220ms
+- `prefers-reduced-motion`：入场与 hover 位移关闭
 
 ## 禁止
-- 圆角阴影卡片、玻璃拟态、渐变强调色回归
-- 内容区滚动监听 JS
+- 内容区 `overflow-y: auto`（v5 滚动失效根源）
+- 玻璃拟态扩散、SVG 位移滤镜、滚动视差 JS（v3/v4 卡顿根源）
+- 卡片上的 backdrop-filter
