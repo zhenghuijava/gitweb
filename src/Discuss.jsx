@@ -1,11 +1,11 @@
 import { forwardRef, useEffect, useState } from 'react'
 import { SOURCES, fetchSource, timeAgo, formatCount } from './discuss.js'
 
-function ItemRow({ item }) {
+function ItemRow({ item, index }) {
   const src = SOURCES.find((s) => s.id === item.source)
   const isVideo = item.source === 'bilibili'
   return (
-    <div className="talk-row">
+    <div className="talk-row" style={{ '--stagger-delay': `${Math.min(index, 11) * 40}ms` }}>
       <span className="talk-badge" style={{ '--src-color': src?.color }}>{src?.short}</span>
       <a className="talk-title" href={item.url} target="_blank" rel="noreferrer">{item.title}</a>
       <div className="talk-meta">
@@ -94,8 +94,8 @@ const Discuss = forwardRef(function Discuss(props, ref) {
 
       {shown.length > 0 && (
         <ol className="talk-list">
-          {shown.map((it) => (
-            <li key={it.id}><ItemRow item={it} /></li>
+          {shown.map((it, i) => (
+            <li key={it.id} style={{ display: 'contents' }}><ItemRow item={it} index={i} /></li>
           ))}
         </ol>
       )}
