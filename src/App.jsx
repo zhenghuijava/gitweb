@@ -11,6 +11,36 @@ function StarIcon() {
   )
 }
 
+/* 几何猫 logo：三角耳 + 方圆脸 + 胡须线，单色 currentColor 随主题变化 */
+function CatLogo({ size = 26 }) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 32 32"
+      fill="none"
+      aria-hidden="true"
+      style={{ display: 'block' }}
+    >
+      {/* 耳朵（三角） */}
+      <path d="M6 13 L8.5 4 L14 9 Z" fill="currentColor" />
+      <path d="M26 13 L23.5 4 L18 9 Z" fill="currentColor" />
+      {/* 脸：圆角方（几何感） */}
+      <path
+        d="M6 13 h20 a4 4 0 0 1 4 4 v6 a8 8 0 0 1 -8 8 h-12 a8 8 0 0 1 -8 -8 v-6 a4 4 0 0 1 4 -4 z"
+        fill="currentColor"
+      />
+      {/* 眼睛（挖空的圆角三角） */}
+      <path d="M11 18.5 l3.2 0 l-1.6 2.8 z" fill="var(--bg)" />
+      <path d="M21 18.5 l-3.2 0 l1.6 2.8 z" fill="var(--bg)" />
+      {/* 鼻子（小菱形）+ 胡须 */}
+      <path d="M16 23.4 l1.4 1.1 l-1.4 1.1 l-1.4 -1.1 z" fill="var(--bg)" />
+      <path d="M8 23.5 h4.2" stroke="var(--bg)" strokeWidth="1.1" strokeLinecap="round" />
+      <path d="M24 23.5 h-4.2" stroke="var(--bg)" strokeWidth="1.1" strokeLinecap="round" />
+    </svg>
+  )
+}
+
 function LanguageDot({ lang }) {
   if (!lang) return null
   return (
@@ -156,7 +186,10 @@ export default function App() {
       <div className="wall-glow" aria-hidden="true" />
       <aside className="sidebar">
         <div className="brand">
-          <span className="brand-name">GitWeb</span>
+          <span className="brand-row">
+            <span className="brand-mark"><CatLogo /></span>
+            <span className="brand-name">GitWeb</span>
+          </span>
           <span className="brand-sub">GitHub Exhibition</span>
         </div>
         <nav className="cats" aria-label="主导航">
