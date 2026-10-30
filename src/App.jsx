@@ -1,12 +1,11 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { CATEGORIES, LANGUAGES, LANGUAGE_COLORS } from './categories.js'
 import { searchRepos, formatStars, formatTime, subscribeRateLimit } from './github.js'
-import { useLiquidGlass } from './liquidGlass.js'
 import Discuss from './Discuss.jsx'
 
 function StarIcon() {
   return (
-    <svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
+    <svg width="11" height="11" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
       <path d="M8 .25a.75.75 0 0 1 .673.418l1.882 3.815 4.21.612a.75.75 0 0 1 .416 1.279l-3.046 2.97.719 4.192a.75.75 0 0 1-1.088.791L8 12.347l-3.766 1.98a.75.75 0 0 1-1.088-.79l.72-4.194L.818 6.374a.75.75 0 0 1 .416-1.28l4.21-.611L7.327.668A.75.75 0 0 1 8 .25Z" />
     </svg>
   )
@@ -16,7 +15,7 @@ function LanguageDot({ lang }) {
   if (!lang) return null
   return (
     <span className="lang">
-      <span className="lang-dot" style={{ background: LANGUAGE_COLORS[lang] || '#8b949e' }} />
+      <span className="lang-dot" style={{ background: LANGUAGE_COLORS[lang] || '#99948a' }} />
       {lang}
     </span>
   )
@@ -37,68 +36,29 @@ function RateLimitBadge() {
   )
 }
 
-// 卡片交互：光标跟随辉光 + 3D 微倾斜（写入 CSS 变量，rAF 节流）
-function useCardTilt() {
-  const ref = useRef(null)
-  const raf = useRef(0)
-  const fine = typeof window !== 'undefined' && window.matchMedia?.('(pointer: fine)').matches
-
-  function onMove(e) {
-    if (!fine || !ref.current) return
-    const el = ref.current
-    const { clientX, clientY } = e
-    cancelAnimationFrame(raf.current)
-    raf.current = requestAnimationFrame(() => {
-      const r = el.getBoundingClientRect()
-      const px = (clientX - r.left) / r.width
-      const py = (clientY - r.top) / r.height
-      el.style.setProperty('--px', `${(px * 100).toFixed(1)}%`)
-      el.style.setProperty('--py', `${(py * 100).toFixed(1)}%`)
-      el.style.setProperty('--rx', `${((0.5 - py) * 5).toFixed(2)}deg`)
-      el.style.setProperty('--ry', `${((px - 0.5) * 5).toFixed(2)}deg`)
-    })
-  }
-  function onLeave() {
-    if (!ref.current) return
-    cancelAnimationFrame(raf.current)
-    const el = ref.current
-    el.style.setProperty('--rx', '0deg')
-    el.style.setProperty('--ry', '0deg')
-  }
-  useEffect(() => () => cancelAnimationFrame(raf.current), [])
-  return { ref, onPointerMove: onMove, onPointerLeave: onLeave }
-}
-
-function RepoCard({ repo, rank, index }) {
-  const tilt = useCardTilt()
-  const glassRef = useLiquidGlass()
+function Plaque({ repo, rank, index }) {
+  const top = rank <= 3
   return (
     <a
-      className="card"
+      className={`plaque ${top ? 'plaque-top' : ''}`}
       href={repo.url}
       target="_blank"
       rel="noreferrer"
-      style={{ '--stagger-delay': `${Math.min(index, 11) * 45}ms` }}
-      ref={(el) => { tilt.ref.current = el; glassRef.current = el }}
-      onPointerMove={tilt.onPointerMove}
-      onPointerLeave={tilt.onPointerLeave}
+      style={{ '--stagger-delay': `${Math.min(index, 7) * 40}ms` }}
     >
-      <div className="card-top">
-        <img className="card-avatar" src={repo.avatar} alt="" loading="lazy" width="28" height="28" />
-        <span className="card-name">{repo.fullName}</span>
-        {rank <= 3 && <span className="card-rank medal">#{rank}</span>}
-      </div>
-      <p className="card-desc">{repo.description || '（无描述）'}</p>
-      {repo.topics.length > 0 && (
-        <div className="card-topics">
-          {repo.topics.slice(0, 3).map((t) => <span className="topic" key={t}>{t}</span>)}
-        </div>
-      )}
-      <div className="card-meta">
+      <span className="plaque-no">No.{String(rank).padStart(3, '0')}</span>
+      <span className="plaque-name">{repo.fullName}</span>
+      <span className="plaque-meta">
         <span className="stars"><StarIcon />{formatStars(repo.stars)}</span>
         <LanguageDot lang={repo.language} />
         <span className="updated">{formatTime(repo.updatedAt)}</span>
-      </div>
+      </span>
+      <p className="plaque-desc">{repo.description || '（无描述）'}</p>
+      {repo.topics.length > 0 && (
+        <span className="plaque-topics">
+          {repo.topics.slice(0, 3).map((t) => <span className="topic" key={t}>{t}</span>)}
+        </span>
+      )}
     </a>
   )
 }
@@ -109,8 +69,6 @@ const SORTS = [
 ]
 
 export default function App() {
-  const sidebarGlass = useLiquidGlass()
-  const toolbarGlass = useLiquidGlass()
   const [catId, setCatId] = useState(CATEGORIES[0].id)
   const [subId, setSubId] = useState(CATEGORIES[0].subs[0].id)
   const [query, setQuery] = useState('')
@@ -123,7 +81,7 @@ export default function App() {
     return window.matchMedia?.('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
   })
 
-  // 主题切换：写 html[data-theme] 供 CSS 变量生效，并持久化
+  // 主题切换：写 html[data-theme] 供 CSS 变量生效，并持久化（首帧已在 index.html 设置，避免闪屏）
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme)
     localStorage.setItem('gitweb:theme', theme)
@@ -189,96 +147,42 @@ export default function App() {
     setSubId(c.subs[0].id)
   }
 
-  // 视差 1：主区滚动时背景层以 0.35x 速度跟随
-  // 视差 2：光斑跟随鼠标做深度位移（不同光斑速度不同，营造纵深），rAF 节流
   const contentRef = useRef(null)
-  const parallaxRef = useRef(null)
-  useEffect(() => {
-    const content = contentRef.current
-    const bg = parallaxRef.current
-    if (!content || !bg) return
-    let raf = 0
-    const onScroll = () => {
-      cancelAnimationFrame(raf)
-      raf = requestAnimationFrame(() => {
-        bg.style.setProperty('--scroll-y', `${content.scrollTop * 0.35}px`)
-      })
-    }
-    content.addEventListener('scroll', onScroll, { passive: true })
-
-    const orbs = bg.querySelectorAll('.parallax-orb')
-    const fine = window.matchMedia?.('(pointer: fine)').matches
-    let mRaf = 0
-    let mx = 0, my = 0
-    let reduceMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
-    const onMedia = (e) => { reduceMotion = e.matches }
-    window.matchMedia('(prefers-reduced-motion: reduce)')?.addEventListener?.('change', onMedia)
-
-    const applyMouse = () => {
-      // 每个光斑按自身 data-depth 系数移动，产生层次
-      orbs.forEach((orb) => {
-        const d = parseFloat(orb.dataset.depth || '1')
-        orb.style.transform = `translate(${mx * d}px, ${my * d}px)`
-      })
-      bg.style.setProperty('--mx', mx.toFixed(3))
-      bg.style.setProperty('--my', my.toFixed(3))
-    }
-    const onMouse = (e) => {
-      if (reduceMotion || !fine) return
-      cancelAnimationFrame(mRaf)
-      mRaf = requestAnimationFrame(() => {
-        mx = (e.clientX / window.innerWidth - 0.5) * 30
-        my = (e.clientY / window.innerHeight - 0.5) * 30
-        applyMouse()
-      })
-    }
-    if (fine) window.addEventListener('pointermove', onMouse, { passive: true })
-    return () => {
-      content.removeEventListener('scroll', onScroll)
-      if (fine) window.removeEventListener('pointermove', onMouse)
-      window.matchMedia('(prefers-reduced-motion: reduce)')?.removeEventListener?.('change', onMedia)
-      cancelAnimationFrame(raf); cancelAnimationFrame(mRaf)
-    }
-  }, [view])
 
   return (
     <div className="shell">
-      <div className="parallax-bg" ref={parallaxRef} aria-hidden="true">
-        <div className="parallax-orb orb-cyan" data-depth="1.4" />
-        <div className="parallax-orb orb-violet" data-depth="0.8" />
-        <div className="parallax-orb orb-rose" data-depth="2.2" />
-      </div>
-      <aside className="sidebar" ref={sidebarGlass}>
+      <div className="wall-glow" aria-hidden="true" />
+      <aside className="sidebar">
         <div className="brand">
-          <span className="brand-mark">GW</span>
           <span className="brand-name">GitWeb</span>
+          <span className="brand-sub">GitHub Exhibition</span>
         </div>
         <nav className="cats" aria-label="主导航">
-          <div className="nav-group-label">探索</div>
+          <div className="nav-group-label">展区</div>
           <button
             className={`cat ${view === 'repos' ? 'cat-active' : ''}`}
             onClick={() => switchView('repos')}
           >
-            <span className="cat-icon" aria-hidden="true">📦</span>
+            <span className="cat-num">01</span>
             热门项目
           </button>
           <button
             className={`cat ${view === 'discuss' ? 'cat-active' : ''}`}
             onClick={() => switchView('discuss')}
           >
-            <span className="cat-icon" aria-hidden="true">💬</span>
+            <span className="cat-num">02</span>
             社区热议
           </button>
         </nav>
         <nav className="cats cats-scroll" aria-label="领域分类">
-          <div className="nav-group-label">领域分类</div>
-          {CATEGORIES.map((c) => (
+          <div className="nav-group-label">展厅</div>
+          {CATEGORIES.map((c, i) => (
             <button
               key={c.id}
               className={`cat ${c.id === catId && view === 'repos' && !searchMode ? 'cat-active' : ''}`}
               onClick={() => { pickCategory(c); setQuery(''); setView('repos') }}
             >
-              <span className="cat-icon" aria-hidden="true">{c.icon}</span>
+              <span className="cat-num">{String(i + 1).padStart(2, '0')}</span>
               {c.name}
             </button>
           ))}
@@ -289,7 +193,7 @@ export default function App() {
       </aside>
 
       <div className="main">
-        <header className="toolbar" ref={toolbarGlass}>
+        <header className="toolbar">
           {view === 'repos' ? (
             <>
               <input
@@ -331,6 +235,10 @@ export default function App() {
         <div className="content" ref={contentRef}>
           <div className="cat-head">
             <h1>{searchMode ? `搜索“${query.trim()}”` : category.name}</h1>
+            <p className="head-note">
+              {searchMode ? 'Search Results' : `${sub.name} · Curated by GitHub Topics`}
+            </p>
+            <hr className="head-rule" />
             {!searchMode && (
               <div className="subs" role="tablist" aria-label="小类">
                 {category.subs.map((s) => (
@@ -378,9 +286,9 @@ export default function App() {
               <p className="empty-hint">试试更换小类、语言或放宽搜索关键词。</p>
             </div>
           ) : (
-            <div className="card-grid">
+            <div className="plaques">
               {items.map((r, i) => (
-                <RepoCard repo={r} rank={i + 1} index={i} key={r.id} />
+                <Plaque repo={r} rank={i + 1} index={i} key={r.id} />
               ))}
             </div>
           )}
