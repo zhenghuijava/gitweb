@@ -1,4 +1,4 @@
-import { forwardRef, useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { SOURCES, fetchSource, timeAgo, formatCount } from './discuss.js'
 
 function ItemRow({ item, index }) {
@@ -52,7 +52,7 @@ function SourceChip({ src, active, onClick, state }) {
   )
 }
 
-const Discuss = forwardRef(function Discuss(props, ref) {
+function Discuss() {
   const [active, setActive] = useState('all')
   const [data, setData] = useState({}) // sourceId -> {items} | {error} | {loading}
   const [tick, setTick] = useState(0)
@@ -81,15 +81,13 @@ const Discuss = forwardRef(function Discuss(props, ref) {
   const failCount = SOURCES.filter((s) => data[s.id]?.error).length
 
   return (
-    <div className="content" ref={ref}>
-      <div className="cat-head">
-        <h1>热议 · 社区热帖</h1>
-        <p className="talk-sub">
-          来自国内外技术社区的当前热门讨论
-          {okCount > 0 && <span className="talk-status ok"> · {okCount} 个源在线</span>}
-          {failCount > 0 && <span className="talk-status fail"> · {failCount} 个源不可达（可能受网络环境限制）</span>}
-        </p>
-        <div className="subs">
+    <div className="explore">
+      <p className="talk-sub">
+        {okCount > 0 && <span className="talk-status ok">{okCount} 个源在线</span>}
+        {okCount > 0 && failCount > 0 && ' · '}
+        {failCount > 0 && <span className="talk-status fail">{failCount} 个源不可达（可能受网络环境限制）</span>}
+      </p>
+      <div className="subs">
           <button
             className={`sub ${active === 'all' ? 'sub-active' : ''}`}
             onClick={() => setActive('all')}
@@ -104,7 +102,6 @@ const Discuss = forwardRef(function Discuss(props, ref) {
             />
           ))}
           <button className="sub" onClick={() => setTick((t) => t + 1)} title="重新拉取所有源">↻ 刷新</button>
-        </div>
       </div>
 
       {anyLoading && shown.length === 0 && (
@@ -141,6 +138,6 @@ const Discuss = forwardRef(function Discuss(props, ref) {
       </div>
     </div>
   )
-})
+}
 
 export default Discuss
