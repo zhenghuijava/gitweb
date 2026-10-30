@@ -1,11 +1,15 @@
-/* GitWeb v2 — 亮色卡片风 + 视差
-   暖白底 · 白卡片柔和分层阴影 · 靛蓝→天青渐变强调 · 视差光斑背景 */
+/* GitWeb v3 — 玻璃拟态 + 双重视差
+   暖白底 · 玻璃卡片（半透+背景模糊+高光描边）· 靛蓝→天青渐变强调
+   视差：滚动背景层 0.35x + 光斑跟随鼠标深度位移 · 卡片光标辉光 + 3D 微倾斜 */
 
 :root {
   --bg: #f6f7fb;
-  --card: #ffffff;
-  --border: #e4e8f0;
+  --card: rgba(255, 255, 255, 0.62);
+  --card-solid: #ffffff;
+  --border: rgba(228, 232, 240, 0.9);
   --border-strong: #cfd6e4;
+  --glass-edge: rgba(255, 255, 255, 0.85);
+  --glass-sheen: rgba(255, 255, 255, 0.5);
   --fg: #1a2233;
   --fg-muted: #5a6b85;
   --fg-faint: #93a0b5;
@@ -16,22 +20,25 @@
   --star: #eab308;
   --danger: #dc2626;
   --ok: #16a34a;
-  --glass: var(--glass);
-  --glass-thin: var(--glass-thin);
-  --input-bg: #ffffff;
-  --pill-bg: #ffffff;
-  --hover-bg: #eef0f7;
+  --glass: rgba(255, 255, 255, 0.55);
+  --glass-thin: rgba(255, 255, 255, 0.42);
+  --input-bg: rgba(255, 255, 255, 0.75);
+  --pill-bg: rgba(255, 255, 255, 0.65);
+  --hover-bg: rgba(79, 70, 229, 0.06);
   --skeleton-a: #eceef4;
   --skeleton-b: #f5f6fa;
   --grid-line: rgba(79, 70, 229, 0.035);
   --orb-cyan: rgba(8, 145, 178, 0.2);
   --orb-violet: rgba(79, 70, 229, 0.16);
-  --topic-bg: var(--topic-bg);
-  --banner-bg: var(--banner-bg);
-  --banner-border: var(--banner-border);
+  --orb-rose: rgba(244, 114, 182, 0.13);
+  --glow: radial-gradient(220px circle at var(--px, 50%) var(--py, 50%), rgba(79, 70, 229, 0.1), transparent 65%);
+  --topic-bg: rgba(79, 70, 229, 0.08);
+  --banner-bg: rgba(8, 145, 178, 0.08);
+  --banner-border: rgba(8, 145, 178, 0.3);
   --shadow-sm: 0 1px 2px rgba(26, 34, 51, 0.05), 0 1px 3px rgba(26, 34, 51, 0.06);
   --shadow-md: 0 4px 12px rgba(26, 34, 51, 0.08), 0 2px 4px rgba(26, 34, 51, 0.05);
   --shadow-lg: 0 12px 32px rgba(79, 70, 229, 0.14), 0 4px 8px rgba(26, 34, 51, 0.06);
+  --glass-blur: 14px;
   --mono: ui-monospace, 'Cascadia Code', 'SF Mono', Consolas, monospace;
   --sans: 'Segoe UI', -apple-system, 'PingFang SC', 'Microsoft YaHei', sans-serif;
   color-scheme: light;
@@ -40,9 +47,12 @@
 /* ---------- 暗色主题 ---------- */
 html[data-theme='dark'] {
   --bg: #0d1020;
-  --card: #151a2e;
-  --border: #232a45;
+  --card: rgba(21, 26, 46, 0.58);
+  --card-solid: #151a2e;
+  --border: rgba(35, 42, 69, 0.9);
   --border-strong: #323b5e;
+  --glass-edge: rgba(129, 140, 248, 0.22);
+  --glass-sheen: rgba(129, 140, 248, 0.09);
   --fg: #e6eaf5;
   --fg-muted: #9aa6c4;
   --fg-faint: #5f6b8f;
@@ -53,22 +63,25 @@ html[data-theme='dark'] {
   --star: #eab308;
   --danger: #f87171;
   --ok: #4ade80;
-  --glass: rgba(17, 21, 40, 0.85);
-  --glass-thin: rgba(17, 21, 40, 0.72);
-  --input-bg: #10142a;
-  --pill-bg: #151a2e;
-  --hover-bg: #1c2340;
+  --glass: rgba(17, 21, 40, 0.66);
+  --glass-thin: rgba(17, 21, 40, 0.5);
+  --input-bg: rgba(16, 20, 42, 0.75);
+  --pill-bg: rgba(21, 26, 46, 0.6);
+  --hover-bg: rgba(129, 140, 248, 0.09);
   --skeleton-a: #1a2038;
   --skeleton-b: #232b4a;
   --grid-line: rgba(129, 140, 248, 0.05);
   --orb-cyan: rgba(34, 211, 238, 0.12);
   --orb-violet: rgba(99, 102, 241, 0.14);
+  --orb-rose: rgba(244, 114, 182, 0.09);
+  --glow: radial-gradient(220px circle at var(--px, 50%) var(--py, 50%), rgba(129, 140, 248, 0.13), transparent 65%);
   --topic-bg: rgba(129, 140, 248, 0.14);
   --banner-bg: rgba(34, 211, 238, 0.09);
   --banner-border: rgba(34, 211, 238, 0.3);
   --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3), 0 1px 3px rgba(0, 0, 0, 0.35);
   --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.4), 0 2px 4px rgba(0, 0, 0, 0.3);
   --shadow-lg: 0 12px 32px rgba(99, 102, 241, 0.25), 0 4px 8px rgba(0, 0, 0, 0.35);
+  --glass-blur: 16px;
   color-scheme: dark;
 }
 
@@ -98,16 +111,16 @@ body {
 /* ---------- 布局 ---------- */
 .shell { display: flex; height: 100vh; position: relative; overflow: hidden; }
 
-/* 视差背景层：细网格 + 光斑，随主区滚动以 0.35x 移动 */
+/* 视差背景层：细网格 + 光斑。
+   双重视差：随主区滚动位移（--scroll-y, 0.35x），光斑再按鼠标偏移（--mx/--my × 各自 depth）*/
 .parallax-bg {
   position: absolute;
   inset: -20% 0 0 0;
   pointer-events: none;
   z-index: 0;
-  background:
-    linear-gradient(var(--grid-line) 1px, transparent 1px),
-    linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
+  background: none;
   background-size: 40px 40px;
+  transform: translate3d(0, var(--scroll-y, 0px), 0);
   will-change: transform;
 }
 
@@ -116,18 +129,34 @@ body {
   border-radius: 50%;
   filter: blur(70px);
   opacity: 0.5;
+  transition: transform 600ms cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: transform;
+}
+
+@keyframes orb-drift {
+  0%, 100% { margin-top: 0; }
+  50% { margin-top: -26px; }
 }
 
 .orb-cyan {
   width: 480px; height: 480px;
   right: -120px; top: 40px;
   background: radial-gradient(circle, var(--orb-cyan), transparent 70%);
+  animation: orb-drift 13s ease-in-out infinite;
 }
 
 .orb-violet {
   width: 560px; height: 560px;
   left: 15%; top: 55%;
   background: radial-gradient(circle, var(--orb-violet), transparent 70%);
+  animation: orb-drift 17s ease-in-out -6s infinite reverse;
+}
+
+.orb-rose {
+  width: 380px; height: 380px;
+  right: 26%; top: -60px;
+  background: radial-gradient(circle, var(--orb-rose), transparent 70%);
+  animation: orb-drift 11s ease-in-out -3s infinite;
 }
 
 .sidebar, .main { position: relative; z-index: 1; }
@@ -139,7 +168,8 @@ body {
   display: flex;
   flex-direction: column;
   background: var(--glass);
-  backdrop-filter: blur(12px);
+  backdrop-filter: blur(14px) saturate(1.4);
+  -webkit-backdrop-filter: blur(14px) saturate(1.4);
 }
 
 .main {
@@ -229,7 +259,8 @@ body {
   padding: 10px 20px;
   border-bottom: 1px solid var(--border);
   background: var(--glass-thin);
-  backdrop-filter: blur(12px);
+  backdrop-filter: blur(14px) saturate(1.4);
+  -webkit-backdrop-filter: blur(14px) saturate(1.4);
 }
 
 .toolbar-hint { color: var(--fg-faint); font-size: 13px; }
@@ -353,33 +384,64 @@ body {
   gap: 14px;
 }
 
+/* 玻璃卡片：半透底 + 背景模糊 + 顶部高光描边 + 光标辉光（--px/--py）+ 3D 微倾斜（--rx/--ry）*/
 .card {
+  position: relative;
   display: flex;
   flex-direction: column;
   gap: 8px;
   padding: 16px;
   background: var(--card);
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
   border: 1px solid var(--border);
   border-radius: 12px;
   text-decoration: none;
   color: inherit;
-  box-shadow: var(--shadow-sm);
-  transition: transform 160ms cubic-bezier(0.2, 0.7, 0.3, 1), box-shadow 160ms ease-out, border-color 160ms ease-out;
+  box-shadow: var(--shadow-sm), inset 0 1px 0 var(--glass-sheen);
+  transform: perspective(900px) rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg));
+  transition: box-shadow 160ms ease-out, border-color 160ms ease-out, background 160ms ease-out;
   /* stagger 入场 */
   animation: card-in 480ms cubic-bezier(0.2, 0.7, 0.3, 1) both;
   animation-delay: var(--stagger-delay, 0ms);
 }
 
+/* 光标辉光层 */
+.card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: var(--glow);
+  opacity: 0;
+  transition: opacity 200ms ease-out;
+  pointer-events: none;
+}
+
+/* 玻璃高光扫过 */
+.card::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(105deg, transparent 42%, var(--glass-sheen) 50%, transparent 58%);
+  transform: translateX(-120%);
+  transition: transform 700ms cubic-bezier(0.16, 1, 0.3, 1);
+  pointer-events: none;
+}
+
 @keyframes card-in {
   from { opacity: 0; transform: translateY(14px) scale(0.985); }
-  to { opacity: 1; transform: none; }
+  to { opacity: 1; transform: perspective(900px) rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg)); }
 }
 
 .card:hover {
-  transform: translateY(-3px);
-  box-shadow: var(--shadow-lg);
-  border-color: rgba(79, 70, 229, 0.35);
+  box-shadow: var(--shadow-lg), inset 0 1px 0 var(--glass-sheen);
+  border-color: var(--glass-edge);
 }
+
+.card:hover::before { opacity: 1; }
+.card:hover::after { transform: translateX(120%); }
 
 .card-top { display: flex; align-items: center; gap: 9px; }
 
@@ -469,19 +531,22 @@ body {
 }
 
 .talk-row {
+  position: relative;
   display: flex;
   align-items: flex-start;
   gap: 14px;
   padding: 13px 16px;
   background: var(--card);
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
   border: 1px solid var(--border);
   border-radius: 10px;
-  box-shadow: var(--shadow-sm);
-  transition: transform 150ms ease-out, box-shadow 150ms ease-out;
+  box-shadow: var(--shadow-sm), inset 0 1px 0 var(--glass-sheen);
+  transition: box-shadow 150ms ease-out, border-color 150ms ease-out;
   animation: card-in 420ms cubic-bezier(0.2, 0.7, 0.3, 1) both;
 }
 
-.talk-row:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); }
+.talk-row:hover { box-shadow: var(--shadow-md), inset 0 1px 0 var(--glass-sheen); border-color: var(--glass-edge); }
 
 .talk-badge {
   flex-shrink: 0;
@@ -593,9 +658,12 @@ body {
   .loading { grid-template-columns: 1fr; }
 }
 
-/* 减少动态偏好 */
+/* 减少动态偏好：去掉空间位移与循环动画，保留颜色/阴影/透明度反馈 */
 @media (prefers-reduced-motion: reduce) {
   .card, .talk-row { animation: none; }
   .parallax-bg { transform: none !important; }
+  .parallax-orb { animation: none !important; transition: none !important; transform: none !important; }
+  .card { transform: none !important; }
+  .card::after, .card::before { display: none; }
   .content { scroll-behavior: auto; }
 }

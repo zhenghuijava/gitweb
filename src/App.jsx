@@ -36,7 +36,40 @@ function RateLimitBadge() {
   )
 }
 
+// 卡片交互：光标跟随辉光 + 3D 微倾斜（写入 CSS 变量，rAF 节流）
+function useCardTilt() {
+  const ref = useRef(null)
+  const raf = useRef(0)
+  const fine = typeof window !== 'undefined' && window.matchMedia?.('(pointer: fine)').matches
+
+  function onMove(e) {
+    if (!fine || !ref.current) return
+    const el = ref.current
+    const { clientX, clientY } = e
+    cancelAnimationFrame(raf.current)
+    raf.current = requestAnimationFrame(() => {
+      const r = el.getBoundingClientRect()
+      const px = (clientX - r.left) / r.width
+      const py = (clientY - r.top) / r.height
+      el.style.setProperty('--px', `${(px * 100).toFixed(1)}%`)
+      el.style.setProperty('--py', `${(py * 100).toFixed(1)}%`)
+      el.style.setProperty('--rx', `${((0.5 - py) * 5).toFixed(2)}deg`)
+      el.style.setProperty('--ry', `${((px - 0.5) * 5).toFixed(2)}deg`)
+    })
+  }
+  function onLeave() {
+    if (!ref.current) return
+    cancelAnimationFrame(raf.current)
+    const el = ref.current
+    el.style.setProperty('--rx', '0deg')
+    el.style.setProperty('--ry', '0deg')
+  }
+  useEffect(() => () => cancelAnimationFrame(raf.current), [])
+  return { ref, onPointerMove: onMove, onPointerLeave: onLeave }
+}
+
 function RepoCard({ repo, rank, index }) {
+  const tilt = useCardTilt()
   return (
     <a
       className="card"
@@ -44,6 +77,9 @@ function RepoCard({ repo, rank, index }) {
       target="_blank"
       rel="noreferrer"
       style={{ '--stagger-delay': `${Math.min(index, 11) * 45}ms` }}
+      ref={tilt.ref}
+      onPointerMove={tilt.onPointerMove}
+      onPointerLeave={tilt.onPointerLeave}
     >
       <div className="card-top">
         <img className="card-avatar" src={repo.avatar} alt="" loading="lazy" width="28" height="28" />
@@ -149,7 +185,8 @@ export default function App() {
     setSubId(c.subs[0].id)
   }
 
-  // 视差：主区滚动时背景层以 0.35x 速度跟随
+  // 视差 1：主区滚动时背景层以 0.35x 速度跟随
+  // 视差 2：光斑跟随鼠标做深度位移（不同光斑速度不同，营造纵深），rAF 节流
   const contentRef = useRef(null)
   const parallaxRef = useRef(null)
   useEffect(() => {
@@ -160,18 +197,52 @@ export default function App() {
     const onScroll = () => {
       cancelAnimationFrame(raf)
       raf = requestAnimationFrame(() => {
-        bg.style.transform = `translateY(${content.scrollTop * 0.35}px)`
+        bg.style.setProperty('--scroll-y', `${content.scrollTop * 0.35}px`)
       })
     }
     content.addEventListener('scroll', onScroll, { passive: true })
-    return () => { content.removeEventListener('scroll', onScroll); cancelAnimationFrame(raf) }
+
+    const orbs = bg.querySelectorAll('.parallax-orb')
+    const fine = window.matchMedia?.('(pointer: fine)').matches
+    let mRaf = 0
+    let mx = 0, my = 0
+    let reduceMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
+    const onMedia = (e) => { reduceMotion = e.matches }
+    window.matchMedia('(prefers-reduced-motion: reduce)')?.addEventListener?.('change', onMedia)
+
+    const applyMouse = () => {
+      // 每个光斑按自身 data-depth 系数移动，产生层次
+      orbs.forEach((orb) => {
+        const d = parseFloat(orb.dataset.depth || '1')
+        orb.style.transform = `translate(${mx * d}px, ${my * d}px)`
+      })
+      bg.style.setProperty('--mx', mx.toFixed(3))
+      bg.style.setProperty('--my', my.toFixed(3))
+    }
+    const onMouse = (e) => {
+      if (reduceMotion || !fine) return
+      cancelAnimationFrame(mRaf)
+      mRaf = requestAnimationFrame(() => {
+        mx = (e.clientX / window.innerWidth - 0.5) * 30
+        my = (e.clientY / window.innerHeight - 0.5) * 30
+        applyMouse()
+      })
+    }
+    if (fine) window.addEventListener('pointermove', onMouse, { passive: true })
+    return () => {
+      content.removeEventListener('scroll', onScroll)
+      if (fine) window.removeEventListener('pointermove', onMouse)
+      window.matchMedia('(prefers-reduced-motion: reduce)')?.removeEventListener?.('change', onMedia)
+      cancelAnimationFrame(raf); cancelAnimationFrame(mRaf)
+    }
   }, [view])
 
   return (
     <div className="shell">
       <div className="parallax-bg" ref={parallaxRef} aria-hidden="true">
-        <div className="parallax-orb orb-cyan" />
-        <div className="parallax-orb orb-violet" />
+        <div className="parallax-orb orb-cyan" data-depth="1.4" />
+        <div className="parallax-orb orb-violet" data-depth="0.8" />
+        <div className="parallax-orb orb-rose" data-depth="2.2" />
       </div>
       <aside className="sidebar">
         <div className="brand">
