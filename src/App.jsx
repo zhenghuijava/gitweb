@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { CATEGORIES, LANGUAGES, LANGUAGE_COLORS } from './categories.js'
 import { searchRepos, formatStars, formatTime, subscribeRateLimit } from './github.js'
+import { useLiquidGlass } from './liquidGlass.js'
 import Discuss from './Discuss.jsx'
 
 function StarIcon() {
@@ -70,6 +71,7 @@ function useCardTilt() {
 
 function RepoCard({ repo, rank, index }) {
   const tilt = useCardTilt()
+  const glassRef = useLiquidGlass()
   return (
     <a
       className="card"
@@ -77,7 +79,7 @@ function RepoCard({ repo, rank, index }) {
       target="_blank"
       rel="noreferrer"
       style={{ '--stagger-delay': `${Math.min(index, 11) * 45}ms` }}
-      ref={tilt.ref}
+      ref={(el) => { tilt.ref.current = el; glassRef.current = el }}
       onPointerMove={tilt.onPointerMove}
       onPointerLeave={tilt.onPointerLeave}
     >
@@ -107,6 +109,8 @@ const SORTS = [
 ]
 
 export default function App() {
+  const sidebarGlass = useLiquidGlass()
+  const toolbarGlass = useLiquidGlass()
   const [catId, setCatId] = useState(CATEGORIES[0].id)
   const [subId, setSubId] = useState(CATEGORIES[0].subs[0].id)
   const [query, setQuery] = useState('')
@@ -244,7 +248,7 @@ export default function App() {
         <div className="parallax-orb orb-violet" data-depth="0.8" />
         <div className="parallax-orb orb-rose" data-depth="2.2" />
       </div>
-      <aside className="sidebar">
+      <aside className="sidebar" ref={sidebarGlass}>
         <div className="brand">
           <span className="brand-mark">GW</span>
           <span className="brand-name">GitWeb</span>
@@ -285,7 +289,7 @@ export default function App() {
       </aside>
 
       <div className="main">
-        <header className="toolbar">
+        <header className="toolbar" ref={toolbarGlass}>
           {view === 'repos' ? (
             <>
               <input
